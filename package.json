@@ -1,0 +1,28 @@
+{
+  "name": "atom-erc20",
+  "version": "1.0.0",
+  "description": "atom is an ERC20 token on sepolia testnet",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Suresh-Ben/atom-erc20.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Suresh-Ben/atom-erc20/issues"
+  },
+  "homepage": "https://github.com/Suresh-Ben/atom-erc20#readme",
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.2.1",
+    "@nomiclabs/hardhat-waffle": "^2.0.3",
+    "chai": "^4.3.7",
+    "ethereum-waffle": "^3.4.4",
+    "ethers": "^5.7.2",
+    "hardhat": "^2.12.4"
+  }
+}
