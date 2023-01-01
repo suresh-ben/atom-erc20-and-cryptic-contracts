@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const my_ethers = require('ethers');
 
-describe("Atom", () => {
+describe("Cryptic", () => {
 
     beforeEach(async() => {
         AtomContract = await ethers.getContractFactory("Atom");
