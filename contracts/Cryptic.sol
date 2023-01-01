@@ -4,10 +4,10 @@ pragma solidity ^0.8.17;
 import "./Atom.sol";
 
 error AllTicketsSold();
-error ExceedingMaxTickets(uint16 maxTixkets, uint16 availableTickets, uint16 orderedTickets);
-error NotAllowedToBuyTicketsPleaseAllowMeToUseAtoms(uint16 orderdTickets, uint AllowedAtoms);
+error ExceedingMaxTickets(uint maxTixkets, uint availableTickets, uint orderedTickets);
+error NotAllowedToBuyTicketsPleaseAllowMeToUseAtoms(uint atomsNeededToBuy, uint AllowedAtoms);
 error YouAreNotOwner();
-error NotAllTicketsAreSold(uint16 totalTickets, uint16 ticketsSold);
+error NotAllTicketsAreSold(uint totalTickets, uint ticketsSold);
 
 /**
  * @title Cryptic Smart contract
@@ -33,17 +33,17 @@ contract Cryptic {
     //immutables
     Atom immutable atomContract;
     address immutable owner;
-    uint16 immutable totalTicekts;
-    uint8 immutable ticketPrice;
+    uint immutable totalTicekts;
+    uint immutable ticketPrice;
 
     //currentTicket keeps track of the cureent ticket number
-    uint16 currentTicket;
+    uint currentTicket;
 
     /**
-     * @dev ticket price need to be set in electrons
+     * @dev ticket price need to be set in atoms
      * 1 atom = 1000 electrons
      */
-    constructor(address _contractAddress, uint16 _totalTicekts, uint8 _ticketPrice) {
+    constructor(address _contractAddress, uint _totalTicekts, uint _ticketPrice) {
         atomContract = Atom(_contractAddress);
         owner = msg.sender;
         totalTicekts = _totalTicekts;
@@ -71,17 +71,28 @@ contract Cryptic {
     address[] players;                                      //array to track all the player addresses and to iterate
     address[] winners;                                      //All the Winners of this lottery from the deployment
 
+    function GetPlayersCount() public view returns(uint) { return players.length; }
+    function GetWinners() public view returns(address[] memory) { return winners; }
 
     //Events
     event AllTicketsAreSold();
+    event TicketSold(address player, uint ticketId);
 
     function BuyTickets(uint16 _tickets) external {
         if(currentTicket > totalTicekts) revert AllTicketsSold();
-        if(currentTicket + _tickets > totalTicekts) revert ExceedingMaxTickets(totalTicekts, totalTicekts - currentTicket + 1, _tickets);
+        if((currentTicket-1) + _tickets > totalTicekts) revert ExceedingMaxTickets(totalTicekts, totalTicekts - currentTicket + 1, _tickets);
 
-        uint allowedAtoms = atomContract.allowance(msg.sender, address(this));
-        if( allowedAtoms < _tickets) 
-            revert NotAllowedToBuyTicketsPleaseAllowMeToUseAtoms(_tickets, allowedAtoms);
+        uint allowedElectrons = atomContract.allowance(msg.sender, address(this));
+        uint requiredElectrons = (_tickets * ticketPrice) * 1000;
+
+        if( allowedElectrons < requiredElectrons ) 
+            revert NotAllowedToBuyTicketsPleaseAllowMeToUseAtoms(_tickets*ticketPrice, (requiredElectrons / 1000));
+
+        //insert player
+        if(!ticketSheet[msg.sender].isPlayer){
+            players.push(msg.sender);
+            ticketSheet[msg.sender].isPlayer = true;
+        }
 
         for(uint8 i = 0; i < _tickets; i++)
             BuyTicket();
@@ -99,8 +110,11 @@ contract Cryptic {
     function BuyTicket() private {
         if(currentTicket > totalTicekts) revert AllTicketsSold();
 
-        atomContract.transferFrom(msg.sender, address(this), 1000 );    //1000 electrons = 1 atom -- doing this here will cost gas same amount for each tickect
+        atomContract.transferFrom(msg.sender, address(this), ticketPrice * 1000 );    //1000 electrons = 1 atom -- doing this here will cost gas same amount for each tickect
+
         ticketSheet[msg.sender].tickets.push(currentTicket);
+        emit TicketSold(msg.sender, currentTicket);
+
         currentTicket++;
 
         if( currentTicket > totalTicekts ) 
@@ -113,17 +127,44 @@ contract Cryptic {
     }
 
     // award the winner
+    /**
+     * @dev Once all tickets are sold owner can cativate this function to randamly choose a winner and award him with 95
+     */
+
+    /**
+     * @dev 
+     * award Calculations
+     * winnerAward : 
+     *  toatlPrice = (totalTickets*ticketPrice) in atoms
+     *  winnerPrice is 95% ==> (totalPrice*95)/100 
+     *  conversion to electrons multiply by 1000
+     *  ==> winnerAward = totalTickets*ticketPrice * 1000 * 95 /100
+     *  ==> winnerAward = totalTickets * ticketPrice * 950
+     * award winner will cost much gas => returns on this lottery are much than the gas, so owner will be happy (lol)
+     */
     function AwardWinner() external OwnerOnly {
         if(currentTicket <= totalTicekts) revert NotAllTicketsAreSold(totalTicekts, currentTicket - 1);
 
         uint winningTicket = GetRandomNumber(totalTicekts);
         address winner = ChooseWinner(winningTicket);
         
-        atomContract.transfer( winner, 95*1000 );
-        atomContract.transfer( owner, 5*1000 );
+        uint winnerAward = totalTicekts * ticketPrice * 950;
+        uint ownerAward = totalTicekts * ticketPrice * 50;
+        
+        atomContract.transfer( winner, winnerAward );
+        atomContract.transfer( owner, ownerAward );
 
         winners.push(winner);
         ResetCryptic();
+    }
+
+    /**
+     * @dev This function gives random number between [1, range]
+     * including 1 and including range
+     * i.e. 1 to range
+     */
+    function GetRandomNumber(uint range) view private returns(uint) {
+        return ( uint256( keccak256( abi.encodePacked( block.timestamp, block.difficulty, msg.sender))) % range ) + 1;
     }
 
     function ChooseWinner(uint winningTicket) private view returns(address) {
@@ -146,10 +187,11 @@ contract Cryptic {
                 break;
         }
 
+        if(winner == address(0))
+            return players[winningTicket / players.length];
+
         return winner;
     }
-    
-
 
     //This function resets the lottery game
     function ResetCryptic() private {
@@ -163,15 +205,6 @@ contract Cryptic {
 
         delete players;
         currentTicket = 1;
-    }
-
-    /**
-     * @dev This function gives random number between [1, range]
-     * including 1 and including range
-     * i.e. 1 to range
-     */
-    function GetRandomNumber(uint16 range) view private returns(uint) {
-        return ( uint256( keccak256( abi.encodePacked( block.timestamp, block.difficulty, msg.sender))) % range ) + 1;
     }
 
 }

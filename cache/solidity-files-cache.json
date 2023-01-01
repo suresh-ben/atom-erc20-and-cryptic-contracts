@@ -36,6 +36,43 @@
         "Atom",
         "IERC20"
       ]
+    },
+    "/mnt/c/Users/suresh/Desktop/web3.0/atom-erc20/contracts/Cryptic.sol": {
+      "lastModificationDate": 1672581966043,
+      "contentHash": "373b9c4414bb419aad8ef6775ca8f895",
+      "sourceName": "contracts/Cryptic.sol",
+      "solcConfig": {
+        "version": "0.8.17",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./Atom.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.17"
+      ],
+      "artifacts": [
+        "Cryptic"
+      ]
     }
   }
 }
