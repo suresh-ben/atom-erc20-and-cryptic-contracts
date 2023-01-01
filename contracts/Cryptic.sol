@@ -6,6 +6,7 @@ import "./Atom.sol";
 error AllTicketsSold();
 error ExceedingMaxTickets(uint maxTixkets, uint availableTickets, uint orderedTickets);
 error NotAllowedToBuyTicketsPleaseAllowMeToUseAtoms(uint atomsNeededToBuy, uint AllowedAtoms);
+error NotEnoughFunds(uint playerBalance, uint requiredElectrons);
 error YouAreNotOwner();
 error NotAllTicketsAreSold(uint totalTickets, uint ticketsSold);
 
@@ -54,10 +55,10 @@ contract Cryptic {
 
     //view functions -- returns the data about this contract
     function GetOwner() external view returns(address) { return owner; }
-    function GetPrice() external view returns(uint) { return ticketPrice; }
+    function GetPrice() external view returns(uint) { return ticketPrice; }     //returns in atoms
     function GetTotalTickets() external view returns(uint) { return totalTicekts; }
-    function TicketsSold() external view returns(uint) {return currentTicket- 1; }
-
+    function TicketsSold() external view returns(uint) { return currentTicket- 1; }
+    function GetAtom() external view returns(address) { return address(atomContract); }
 
     //contract variables
 
@@ -77,6 +78,7 @@ contract Cryptic {
     //Events
     event AllTicketsAreSold();
     event TicketSold(address player, uint ticketId);
+    event NewWinnerAnnounced(address winner);
 
     function BuyTickets(uint16 _tickets) external {
         if(currentTicket > totalTicekts) revert AllTicketsSold();
@@ -87,6 +89,11 @@ contract Cryptic {
 
         if( allowedElectrons < requiredElectrons ) 
             revert NotAllowedToBuyTicketsPleaseAllowMeToUseAtoms(_tickets*ticketPrice, (requiredElectrons / 1000));
+
+        uint playerBalance = atomContract.balanceOf(msg.sender);
+
+        if(playerBalance < requiredElectrons)
+            revert NotEnoughFunds(playerBalance, requiredElectrons);
 
         //insert player
         if(!ticketSheet[msg.sender].isPlayer){
@@ -150,11 +157,12 @@ contract Cryptic {
         
         uint winnerAward = totalTicekts * ticketPrice * 950;
         uint ownerAward = totalTicekts * ticketPrice * 50;
-        
+
         atomContract.transfer( winner, winnerAward );
         atomContract.transfer( owner, ownerAward );
 
         winners.push(winner);
+        emit NewWinnerAnnounced(winner);
         ResetCryptic();
     }
 

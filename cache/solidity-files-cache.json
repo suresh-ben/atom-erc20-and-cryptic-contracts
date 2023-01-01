@@ -38,8 +38,8 @@
       ]
     },
     "/mnt/c/Users/suresh/Desktop/web3.0/atom-erc20/contracts/Cryptic.sol": {
-      "lastModificationDate": 1672581966043,
-      "contentHash": "373b9c4414bb419aad8ef6775ca8f895",
+      "lastModificationDate": 1672598161138,
+      "contentHash": "ad22511bf729259241d976ab97004af1",
       "sourceName": "contracts/Cryptic.sol",
       "solcConfig": {
         "version": "0.8.17",
