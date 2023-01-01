@@ -1,0 +1,21 @@
+balance = await contract.balanceOf(owner.address)
+[owner] = await ethers.getSigners()
+await contract.mintAtoms({value : my_ethers.utils.parseEther("0.053")})
+let my_ethers = require('ethers')
+contract
+let contract = await ethers.getContractAt("Atom", "0x2eBD9a4E16b7dE2Af9cAC774D1E08087091093D2")
+await contract.balanceOf(owner.address)
+await contract.mintAtoms({ value : my_ethers.utils.parseEther("0.2") })
+my_ethers
+const my_ethers = require('ethers')
+await contract.balanceOf(owner.address)
+await contract.mintAtoms({value : 0 })
+await contract.balanceOf(owner.address)
+owner.address
+[owner] = await ethers.getSigners()
+owner
+await contract.symbol()
+await contract.name()
+contract.name()
+contract.address
+let contract = await ethers.getContractAt("Atom", "0x2eBD9a4E16b7dE2Af9cAC774D1E08087091093D2");
