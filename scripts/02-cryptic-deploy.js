@@ -3,7 +3,7 @@ const my_ethers = require('ethers');
 async function main() {
 
     // const [deployer] = await ethers.getSigners();
-    const AtomAddress = "0x5fbdb2315678afecb367f032d93f642f64180aa3";
+    const AtomAddress = "0x2eBD9a4E16b7dE2Af9cAC774D1E08087091093D2";
     const totalTickets = 100;
     const ticketPrice = 1;
 
